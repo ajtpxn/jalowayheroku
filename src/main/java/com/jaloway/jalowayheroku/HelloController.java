@@ -9,7 +9,7 @@ public class HelloController {
 	@GetMapping("/")
 	public String index() {
 		System.out.println("Endpoint Reached.");
-		return "Greetings from novlr!";
+		return "Greetings from Novlr!";
 	}
 
 }
