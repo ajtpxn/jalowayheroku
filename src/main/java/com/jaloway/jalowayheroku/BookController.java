@@ -1,6 +1,7 @@
 package com.jaloway.jalowayheroku;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -12,57 +13,122 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
+
 @RestController
 @CrossOrigin({"*", "http://localhost:4200"})
 public class BookController {
 	
 	@Autowired
 	BookRepo bookRepo;
+	
+	@Autowired
+	ObjectMapper mapper;
 
 	int bookChunkSize = 3;
 	
 	@GetMapping("/")
-	public String index() {
-		System.out.println("Endpoint Reached. Index mapping.");
+	public ObjectNode index() {
+		ObjectNode objectNode = mapper.createObjectNode();
+		ArrayNode arrayNode = mapper.createArrayNode();
 		List<Book> list = bookRepo.findAll();
-		for (Book book : list) {
-			System.out.println("id: " + book.getId());
-			System.out.println("author: " + book.getAuthor());
-			System.out.println("title: " + book.getTitle());
-			System.out.println("paragraphs: " + book.getParagraphs());
+		try {
+			arrayNode = mapper.valueToTree(list);
+			objectNode.putArray("Main Node").addAll(arrayNode);
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			objectNode.put("fail result", e.toString());
 		}
-		return "Greetings from Novlr! Index mapping.";
+		return objectNode;
 	}
 	
-	@GetMapping("/{pageNumber}")
-	public String getbook(@PathVariable int id) {
-		System.out.println("Endpoint Reached. Get mapping.");
-		Book book = bookRepo.getById(id);
-		return "Greetings from Novlr! Get mapping.";
+	public void serializeParagraphs() {
+	}
+	
+	@GetMapping("/{paginationNumber}")
+	public ObjectNode getbook(@PathVariable int paginationNumber) {
+		List<Book> list = bookRepo.findAll();
+		int listSize = list.size();
+		System.out.println("listSize: " + listSize);
+		ObjectNode objectNode = mapper.createObjectNode();
+		ArrayNode arrayNode = mapper.createArrayNode();
+		int startingPoint = paginationNumber * bookChunkSize;
+		System.out.println("startingPoint: " + startingPoint);
+		int endingPoint = startingPoint + bookChunkSize;
+		System.out.println("endingPoint: " + endingPoint);
+		boolean hasMoreBooks = true;
+		if (endingPoint >= listSize) {
+			endingPoint = listSize;
+			System.out.println("adjusted endingPoint: " + endingPoint);
+			hasMoreBooks = false;
+		}
+		try {
+			for (int i = startingPoint; i < endingPoint; i++) {
+				ObjectNode thisBookNode = mapper.valueToTree(list.get(i));
+				arrayNode.add(thisBookNode);
+			}
+			objectNode.putArray("Main Node").addAll(arrayNode);
+			JsonNode hasMoreBooksObject = mapper.convertValue(hasMoreBooks, JsonNode.class);
+			objectNode.set("hasMoreBooks", hasMoreBooksObject);
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			objectNode.put("fail result", e.toString());
+		}
+		return objectNode;
 	}
 		
 	@PostMapping("/")
-	public String post(@RequestBody Book book) {
-		System.out.println("Endpoint Reached. Post mapping.");
-		System.out.println("author: " + book.getAuthor());
-		System.out.println("title: " + book.getTitle());
-		bookRepo.saveAndFlush(book);
-		return "Greetings from Novlr! Post mapping.";
+	public ObjectNode post(@RequestBody Book book) {
+		ObjectNode objectNode = mapper.createObjectNode();
+		try {
+			bookRepo.saveAndFlush(book);
+			objectNode = mapper.convertValue(book, ObjectNode.class);
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			objectNode.put("fail result", e.toString());
+		}
+		return objectNode;
 	}
 	
-	@PatchMapping(path = "/{id}", consumes = "application/json-patch+json")
-	public String patch(@PathVariable int id, @RequestBody Book book) {
-		System.out.println("Endpoint Reached. Patch mapping. Id: " + id);
-		bookRepo.getById(id);
-		bookRepo.saveAndFlush(book);
-		return "Greetings from Novlr! Patch mapping. Id: " + id;
+	@PatchMapping(path = "/{id}")
+	public ObjectNode patch(@PathVariable int id, @RequestBody Book newBook) {
+		ObjectNode objectNode = mapper.createObjectNode();
+		Optional<Book> optional = bookRepo.findById(id);
+		Book updateBook = new Book();
+		if (optional.isPresent()) {
+			updateBook = optional.get();
+			try {
+				updateBook.setAuthor(newBook.getAuthor());
+				updateBook.setTitle(newBook.getTitle());
+				updateBook.setParagraphs(newBook.getParagraphs());
+				bookRepo.saveAndFlush(updateBook);
+				objectNode = mapper.convertValue(updateBook, ObjectNode.class);
+			} catch (Exception e) {
+				System.out.println(e.toString());
+				objectNode.put("fail result", e.toString());
+			}
+		}
+		else {
+			objectNode.put("fail result", "book not found");
+		}
+		return objectNode;
 	}
 	
 	@DeleteMapping("/{id}")
-	public String delete(@PathVariable int id) {
+	public ObjectNode delete(@PathVariable int id) {
 		System.out.println("Endpoint Reached. Delete Mapping. Id: " + id);
-		bookRepo.deleteById(id);
-		return "Greetings from Novlr! Deleted book: " + id;
+		ObjectNode returnObjectNode = mapper.createObjectNode();
+		try {
+			bookRepo.deleteById(id);
+			returnObjectNode.put("deleted", id);
+		} catch (Exception e) {
+			System.out.println(e.toString());
+			returnObjectNode.put("fail result", e.toString());
+		}
+		return returnObjectNode;
 	}
 
 }
