@@ -67,7 +67,7 @@ public class BookController {
 				ObjectNode thisBookNode = mapper.valueToTree(list.get(i));
 				arrayNode.add(thisBookNode);
 			}
-			objectNode.putArray("Main Node").addAll(arrayNode);
+			objectNode.putArray("books").addAll(arrayNode);
 			JsonNode hasMoreBooksObject = mapper.convertValue(hasMoreBooks, JsonNode.class);
 			objectNode.set("hasMoreBooks", hasMoreBooksObject);
 		} catch (Exception e) {
