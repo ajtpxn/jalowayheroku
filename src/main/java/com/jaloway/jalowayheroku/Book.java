@@ -16,6 +16,8 @@ public class Book {
 	
 	private String title;
 	
+//	@OneToMany(cascade = CascadeType.ALL, mappedBy = "book")
+//	@JsonIgnoreProperties("book")
 	private String paragraphs;
 
 	public String getAuthor() {

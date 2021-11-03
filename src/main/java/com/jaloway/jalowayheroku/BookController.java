@@ -45,9 +45,6 @@ public class BookController {
 		return objectNode;
 	}
 	
-	public void serializeParagraphs() {
-	}
-	
 	@GetMapping("/{paginationNumber}")
 	public ObjectNode getbook(@PathVariable int paginationNumber) {
 		List<Book> list = bookRepo.findAll();
@@ -81,9 +78,20 @@ public class BookController {
 	}
 		
 	@PostMapping("/")
-	public ObjectNode post(@RequestBody Book book) {
+	public ObjectNode post(@RequestBody String bookAsString) {
 		ObjectNode objectNode = mapper.createObjectNode();
 		try {
+			JsonNode node = mapper.readTree(bookAsString);
+			String authorString = node.get("author").asText();
+			Book book = new Book();
+			book.setAuthor(authorString);
+			System.out.println(authorString);
+			String titleString = node.get("title").asText();
+			book.setTitle(titleString);
+			System.out.println(titleString);
+			JsonNode arrNode = node.get("paragraphs");
+			book.setParagraphs(arrNode.toString());
+			System.out.println(arrNode.toString());
 			bookRepo.saveAndFlush(book);
 			objectNode = mapper.convertValue(book, ObjectNode.class);
 		} catch (Exception e) {
