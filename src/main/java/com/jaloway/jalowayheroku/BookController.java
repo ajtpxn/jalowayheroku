@@ -35,7 +35,6 @@ public class BookController {
 		if (bookNode.has("paragraphs")) {
 			String paraString = bookNode.get("paragraphs").asText();
 			ArrayNode paraArrayNode = mapper.readValue(paraString, ArrayNode.class);
-			System.out.println(paraArrayNode.toString());
 			bookNode.remove("paragraphs");
 			bookNode.putArray("paragraphs").addAll(paraArrayNode);
 		}
