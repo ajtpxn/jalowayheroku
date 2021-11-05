@@ -37,7 +37,6 @@ public class BookController {
 			if (paraString != null) {
 				ArrayNode paraArrayNode = mapper.readValue(paraString, ArrayNode.class);
 				if (paraArrayNode != null) {
-					System.out.println(paraArrayNode.toString());
 					bookNode.remove("paragraphs");
 					bookNode.putArray("paragraphs").addAll(paraArrayNode);
 				}
@@ -53,17 +52,14 @@ public class BookController {
 		if (node.has("author")) {
 			authorString = node.get("author").asText();
 			book.setAuthor(authorString);
-			System.out.println(authorString);
 		}
 		if (node.has("title")) {
 			String titleString = node.get("title").asText();
 			book.setTitle(titleString);
-			System.out.println(titleString);
 		}
 		if (node.has("paragraphs")) {
 			JsonNode arrNode = node.get("paragraphs");
 			book.setParagraphs(arrNode.toString());
-			System.out.println(arrNode.toString());
 		}
 		return book;
 	}
@@ -72,7 +68,6 @@ public class BookController {
 	public ObjectNode index() {
 		List<Book> list = bookRepo.findAll();
 		int listSize = list.size();
-		System.out.println("listSize: " + listSize);
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
 		try {
@@ -93,17 +88,13 @@ public class BookController {
 	public ObjectNode getbook(@PathVariable int paginationNumber) {
 		List<Book> list = bookRepo.findAll();
 		int listSize = list.size();
-		System.out.println("listSize: " + listSize);
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
 		int startingPoint = paginationNumber * bookChunkSize;
-		System.out.println("startingPoint: " + startingPoint);
 		int endingPoint = startingPoint + bookChunkSize;
-		System.out.println("endingPoint: " + endingPoint);
 		boolean hasMoreBooks = true;
 		if (endingPoint >= listSize) {
 			endingPoint = listSize;
-			System.out.println("adjusted endingPoint: " + endingPoint);
 			hasMoreBooks = false;
 		}
 		try {
@@ -171,7 +162,6 @@ public class BookController {
 	
 	@DeleteMapping("/{id}")
 	public ObjectNode delete(@PathVariable int id) {
-		System.out.println("Endpoint Reached. Delete Mapping. Id: " + id);
 		ObjectNode returnObjectNode = mapper.createObjectNode();
 		try {
 			bookRepo.deleteById(id);
