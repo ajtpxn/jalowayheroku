@@ -32,11 +32,13 @@ public class BookController {
 	int bookChunkSize = 3;
 	
 	private ObjectNode paraStringToArrayNode(ObjectNode bookNode) throws JsonProcessingException {
-		String paraString = bookNode.get("paragraphs").asText();
-		ArrayNode paraArrayNode = mapper.readValue(paraString, ArrayNode.class);
-		System.out.println(paraArrayNode.toString());
-		bookNode.remove("paragraphs");
-		bookNode.putArray("paragraphs").addAll(paraArrayNode);
+		if (bookNode.has("paragraphs")) {
+			String paraString = bookNode.get("paragraphs").asText();
+			ArrayNode paraArrayNode = mapper.readValue(paraString, ArrayNode.class);
+			System.out.println(paraArrayNode.toString());
+			bookNode.remove("paragraphs");
+			bookNode.putArray("paragraphs").addAll(paraArrayNode);
+		}
 		return bookNode;
 	}
 	
@@ -63,15 +65,21 @@ public class BookController {
 	}
 	
 	@GetMapping("/")
-	public ObjectNode index() {
+	public ObjectNode indexTwo() {
+		List<Book> list = bookRepo.findAll();
+		int listSize = list.size();
+		System.out.println("listSize: " + listSize);
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
-		List<Book> list = bookRepo.findAll();
 		try {
-			arrayNode = mapper.valueToTree(list);
+			for (int i = 0; i < listSize; i++) {
+				ObjectNode thisBookNode = mapper.valueToTree(list.get(i));
+				thisBookNode = paraStringToArrayNode(thisBookNode);
+				arrayNode.add(thisBookNode);
+			}
 			objectNode.putArray("books").addAll(arrayNode);
 		} catch (Exception e) {
-			System.out.println(e.toString());
+			e.printStackTrace();
 			objectNode.put("fail result", e.toString());
 		}
 		return objectNode;
