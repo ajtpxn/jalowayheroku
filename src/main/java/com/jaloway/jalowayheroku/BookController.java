@@ -34,9 +34,14 @@ public class BookController {
 	private ObjectNode paraStringToArrayNode(ObjectNode bookNode) throws JsonProcessingException {
 		if (bookNode.has("paragraphs")) {
 			String paraString = bookNode.get("paragraphs").asText();
-			ArrayNode paraArrayNode = mapper.readValue(paraString, ArrayNode.class);
-			bookNode.remove("paragraphs");
-			bookNode.putArray("paragraphs").addAll(paraArrayNode);
+			if (paraString != null) {
+				ArrayNode paraArrayNode = mapper.readValue(paraString, ArrayNode.class);
+				if (paraArrayNode != null) {
+					System.out.println(paraArrayNode.toString());
+					bookNode.remove("paragraphs");
+					bookNode.putArray("paragraphs").addAll(paraArrayNode);
+				}
+			}
 		}
 		return bookNode;
 	}
@@ -64,7 +69,7 @@ public class BookController {
 	}
 	
 	@GetMapping("/")
-	public ObjectNode indexTwo() {
+	public ObjectNode index() {
 		List<Book> list = bookRepo.findAll();
 		int listSize = list.size();
 		System.out.println("listSize: " + listSize);
