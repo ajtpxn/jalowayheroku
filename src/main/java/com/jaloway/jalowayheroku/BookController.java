@@ -27,6 +27,9 @@ public class BookController {
 	BookRepo bookRepo;
 	
 	@Autowired
+	BookService bookService;
+	
+	@Autowired
 	ObjectMapper mapper;
 
 	int bookChunkSize = 3;
@@ -66,7 +69,7 @@ public class BookController {
 	
 	@GetMapping("/")
 	public ObjectNode index() {
-		List<Book> list = bookRepo.findAll();
+		List<Book> list = bookService.getSortedBookList();
 		int listSize = list.size();
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
@@ -86,7 +89,7 @@ public class BookController {
 	
 	@GetMapping("/{paginationNumber}")
 	public ObjectNode getbook(@PathVariable int paginationNumber) {
-		List<Book> list = bookRepo.findAll();
+		List<Book> list = bookService.getSortedBookList();
 		int listSize = list.size();
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
