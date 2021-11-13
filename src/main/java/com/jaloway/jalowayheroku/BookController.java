@@ -29,7 +29,7 @@ public class BookController {
 	@Autowired
 	ObjectMapper mapper;
 	
-	int bookChunkSize = 20;
+	int bookChunkSize = 50;
 	
 	List<Book> sortedBookList;
 	
