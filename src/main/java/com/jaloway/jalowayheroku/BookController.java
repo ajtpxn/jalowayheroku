@@ -35,6 +35,7 @@ public class BookController {
 	
 	@Autowired
 	private void sortSortedBookList() {
+	System.out.println("Sorting...");
 	List<Book> list = bookRepo.findAll();
 	list.sort((left, right) -> left.getId() - right.getId());
 	sortedBookList = list;
