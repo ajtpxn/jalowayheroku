@@ -27,12 +27,18 @@ public class BookController {
 	BookRepo bookRepo;
 	
 	@Autowired
-	BookService bookService;
+	ObjectMapper mapper;
+	
+	int bookChunkSize = 20;
+	
+	List<Book> sortedBookList;
 	
 	@Autowired
-	ObjectMapper mapper;
-
-	int bookChunkSize = 3;
+	private void sortSortedBookList() {
+	List<Book> list = bookRepo.findAll();
+	list.sort((left, right) -> left.getId() - right.getId());
+	sortedBookList = list;
+	}
 	
 	private ObjectNode paraStringToArrayNode(ObjectNode bookNode) throws JsonProcessingException {
 		if (bookNode.has("paragraphs")) {
@@ -69,13 +75,12 @@ public class BookController {
 	
 	@GetMapping("/")
 	public ObjectNode index() {
-		List<Book> list = bookService.getSortedBookList();
-		int listSize = list.size();
+		int listSize = sortedBookList.size();
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
 		try {
 			for (int i = 0; i < listSize; i++) {
-				ObjectNode thisBookNode = mapper.valueToTree(list.get(i));
+				ObjectNode thisBookNode = mapper.valueToTree(sortedBookList.get(i));
 				thisBookNode = paraStringToArrayNode(thisBookNode);
 				arrayNode.add(thisBookNode);
 			}
@@ -89,8 +94,7 @@ public class BookController {
 	
 	@GetMapping("/{paginationNumber}")
 	public ObjectNode getbook(@PathVariable int paginationNumber) {
-		List<Book> list = bookService.getSortedBookList();
-		int listSize = list.size();
+		int listSize = sortedBookList.size();
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
 		int startingPoint = paginationNumber * bookChunkSize;
@@ -102,7 +106,7 @@ public class BookController {
 		}
 		try {
 			for (int i = startingPoint; i < endingPoint; i++) {
-				ObjectNode thisBookNode = mapper.valueToTree(list.get(i));
+				ObjectNode thisBookNode = mapper.valueToTree(sortedBookList.get(i));
 				thisBookNode = paraStringToArrayNode(thisBookNode);
 				arrayNode.add(thisBookNode);
 			}
@@ -128,6 +132,7 @@ public class BookController {
 			e.printStackTrace();
 			objectNode.put("fail result", e.toString());
 		}
+		sortSortedBookList();
 		return objectNode;
 	}
 	
@@ -160,6 +165,7 @@ public class BookController {
 		else {
 			objectNode.put("fail result", "book not found");
 		}
+		sortSortedBookList();
 		return objectNode;
 	}
 	
@@ -173,6 +179,7 @@ public class BookController {
 			e.printStackTrace();
 			returnObjectNode.put("fail result", e.toString());
 		}
+		sortSortedBookList();
 		return returnObjectNode;
 	}
 
