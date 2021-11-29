@@ -139,23 +139,6 @@ public class BookController {
 		return objectNode;
 	}
 	
-	@PostMapping("/OneHundred")
-	public ObjectNode postOneHundred(@RequestBody String bookAsString) {
-		ObjectNode objectNode = mapper.createObjectNode();
-		for (int i = 0; i < 100; i++) {
-			try {
-				Book book = stringToBook(bookAsString);
-				bookRepo.saveAndFlush(book);
-				objectNode = mapper.convertValue(book, ObjectNode.class);
-				objectNode = paraStringToArrayNode(objectNode);
-			} catch (Exception e) {
-				e.printStackTrace();
-				objectNode.put("fail result", e.toString());
-			}
-		}
-		sortSortedBookList();
-		return objectNode;
-	}
 	
 	@PatchMapping(path = "/{id}")
 	public ObjectNode patch(@PathVariable int id, @RequestBody String newBookAsString) {
