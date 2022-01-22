@@ -101,7 +101,6 @@ public class BookController {
 	public ObjectNode getbook(@PathVariable int paginationNumber, HttpServletRequest request) {
 		System.out.println("request.getRequestURI(): " + request.getRequestURI());
 		System.out.println("request.getHeader(\"X-Forwarded-Proto\"): " + request.getHeader("X-Forwarded-Proto"));
-		
 		int listSize = sortedBookList.size();
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
