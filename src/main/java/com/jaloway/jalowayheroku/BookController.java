@@ -3,6 +3,8 @@ package com.jaloway.jalowayheroku;
 import java.util.List;
 import java.util.Optional;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
@@ -96,7 +98,10 @@ public class BookController {
 	}
 	
 	@GetMapping("/{paginationNumber}")
-	public ObjectNode getbook(@PathVariable int paginationNumber) {
+	public ObjectNode getbook(@PathVariable int paginationNumber, HttpServletRequest request) {
+		System.out.println("request.getRequestURI(): " + request.getRequestURI());
+		System.out.println("request.getHeader(\"X-Forwarded-Proto\"): " + request.getHeader("X-Forwarded-Proto"));
+		
 		int listSize = sortedBookList.size();
 		ObjectNode objectNode = mapper.createObjectNode();
 		ArrayNode arrayNode = mapper.createArrayNode();
